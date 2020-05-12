@@ -197,6 +197,23 @@ $box-shadow: (
     @return scale-color($adjusted-color, $lightness: $darkness);
   }
 }
+
+@function dl-test(
+  $color-1,
+  $color-2,
+  $lighter-than-amt,
+  $darker-than-amt
+) {
+  @if dc-color-brightness($color-1) >
+  dc-color-brightness($color-2) {
+    // for mix to work properly, always mix with darker color first
+    // lighter color second
+    @return mix($color-2, $color-1, $lighter-than-amt)
+  } @else {
+    @return mix($color-1, $color-2, $darker-than-amt)
+  }
+}
+
 @function dark-light-choose($light-theme-result, $dark-theme-result) {
   @if is-light-color-scheme() {
     @return $light-theme-result;

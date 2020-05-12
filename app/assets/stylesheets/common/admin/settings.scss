@@ -108,6 +108,7 @@
   }
   .setting.overridden {
     h3 {
+      // only place we use highlight-high ? does this really need a variable
       color: $highlight-high;
     }
   }
