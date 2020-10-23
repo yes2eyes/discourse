@@ -163,12 +163,10 @@ describe Invite do
         end
 
         it 'resets expiry of a resent invite' do
-          SiteSetting.invite_expiry_days = 2
-          invite.update!(invalidated_at: 10.days.ago, expires_at: 10.days.ago)
+          invite.update!(expires_at: 10.days.ago)
           expect(invite).to be_expired
 
           invite.resend_invite
-          expect(invite.invalidated_at).to be_nil
           expect(invite).not_to be_expired
         end
 
@@ -258,11 +256,6 @@ describe Invite do
 
     it 'wont redeem a deleted invite' do
       invite.destroy
-      expect(invite.redeem).to be_blank
-    end
-
-    it "won't redeem an invalidated invite" do
-      invite.invalidated_at = 1.day.ago
       expect(invite.redeem).to be_blank
     end
 
@@ -557,7 +550,6 @@ describe Invite do
     it 'sets the matching invite to be invalid' do
       invite = Fabricate(:invite, invited_by: Fabricate(:user), email: email)
       expect(subject).to eq(invite)
-      expect(subject.link_valid?).to eq(false)
       expect(subject).to be_valid
     end
 
@@ -565,7 +557,6 @@ describe Invite do
       invite = Fabricate(:invite, invited_by: Fabricate(:user), email: 'invite.me2@Example.COM')
       result = described_class.invalidate_for_email('invite.me2@EXAMPLE.com')
       expect(result).to eq(invite)
-      expect(result.link_valid?).to eq(false)
       expect(result).to be_valid
     end
   end

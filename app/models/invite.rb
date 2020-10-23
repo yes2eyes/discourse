@@ -75,13 +75,8 @@ class Invite < ActiveRecord::Base
     expires_at < Time.zone.now
   end
 
-  # link_valid? indicates whether the invite link can be used to log in to the site
-  def link_valid?
-    invalidated_at.nil?
-  end
-
   def redeem(username: nil, name: nil, password: nil, user_custom_fields: nil, ip_address: nil)
-    if !expired? && !destroyed? && link_valid?
+    if !expired? && !destroyed?
       InviteRedeemer.new(invite: self, email: self.email, username: username, name: name, password: password, user_custom_fields: user_custom_fields, ip_address: ip_address).redeem
     end
   end
@@ -205,7 +200,7 @@ class Invite < ActiveRecord::Base
   def redeem_invite_link(email: nil, username: nil, name: nil, password: nil, user_custom_fields: nil, ip_address: nil)
     DistributedMutex.synchronize("redeem_invite_link_#{self.id}") do
       reload
-      if is_invite_link? && !expired? && !redeemed? && !destroyed? && link_valid?
+      if is_invite_link? && !expired? && !redeemed? && !destroyed?
         raise UserExists.new I18n.t("invite_link.email_taken") if UserEmail.exists?(email: email)
         InviteRedeemer.new(invite: self, email: email, username: username, name: name, password: password, user_custom_fields: user_custom_fields, ip_address: ip_address).redeem
       end
@@ -298,12 +293,9 @@ class Invite < ActiveRecord::Base
   end
 
   def self.invalidate_for_email(email)
-    i = Invite.find_by(email: Email.downcase(email))
-    if i
-      i.invalidated_at = Time.zone.now
-      i.save
-    end
-    i
+    invite = Invite.find_by(email: Email.downcase(email))
+    invite&.trash!
+    invite
   end
 
   def self.redeem_from_email(email)
@@ -313,7 +305,7 @@ class Invite < ActiveRecord::Base
   end
 
   def resend_invite
-    self.update_columns(updated_at: Time.zone.now, invalidated_at: nil, expires_at: SiteSetting.invite_expiry_days.days.from_now)
+    self.update_columns(updated_at: Time.zone.now, expires_at: SiteSetting.invite_expiry_days.days.from_now)
     Jobs.enqueue(:invite_email, invite_id: self.id)
   end
 
