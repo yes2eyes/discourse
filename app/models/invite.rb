@@ -9,6 +9,7 @@ class Invite < ActiveRecord::Base
   self.ignored_columns = %w{
     user_id
     redeemed_at
+    invalidated_at
   }
 
   BULK_INVITE_EMAIL_LIMIT = 200
@@ -361,7 +362,6 @@ end
 #  updated_at              :datetime         not null
 #  deleted_at              :datetime
 #  deleted_by_id           :integer
-#  invalidated_at          :datetime
 #  moderator               :boolean          default(FALSE), not null
 #  custom_message          :text
 #  emailed_status          :integer
