@@ -1,7 +1,7 @@
 import { queryAll } from "discourse/tests/helpers/qunit-helpers";
 import { moduleForComponent } from "ember-qunit";
 import { isEmpty } from "@ember/utils";
-import { click, fillIn } from "@ember/test-helpers";
+import { click, fillIn, triggerEvent } from "@ember/test-helpers";
 import { exists } from "discourse/tests/helpers/qunit-helpers";
 
 function checkSelectKitIsNotExpanded(selector) {
@@ -58,7 +58,7 @@ async function selectKitSelectNoneRow(selector) {
 
 async function selectKitSelectRowByIndex(index, selector) {
   checkSelectKitIsNotCollapsed(selector);
-  await click(queryAll(`${selector} .select-kit-row`).eq(index));
+  await click(queryAll(`${selector} .select-kit-row`)[index]);
 }
 
 async function keyboardHelper(value, target, selector) {
@@ -81,7 +81,7 @@ async function keyboardHelper(value, target, selector) {
     };
 
     await triggerEvent(
-      target,
+      target[0],
       "keydown",
       mapping[value] || { keyCode: value.charCodeAt(0) }
     );
