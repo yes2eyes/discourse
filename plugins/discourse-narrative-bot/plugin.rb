@@ -50,6 +50,11 @@ after_initialize do
   # Disable welcome message because that is what the bot is supposed to replace.
   SiteSetting.send_welcome_message = false if SiteSetting.send_welcome_message
 
+  certificate_path = "#{Discourse.base_url}/discobot/certificate.svg"
+  if SiteSetting.discourse_narrative_bot_enabled && !SiteSetting.allowed_iframes.include?(certificate_path)
+    SiteSetting.allowed_iframes = SiteSetting.allowed_iframes.split('|').append("#{Discourse.base_url}/discobot/certificate.svg").join('|')
+  end
+
   require_dependency 'plugin_store'
 
   module ::DiscourseNarrativeBot
