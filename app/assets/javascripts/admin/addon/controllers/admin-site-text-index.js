@@ -1,5 +1,6 @@
 import Controller from "@ember/controller";
 import discourseDebounce from "discourse-common/lib/debounce";
+
 let lastSearch;
 
 export default Controller.extend({
