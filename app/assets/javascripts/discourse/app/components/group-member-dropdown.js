@@ -45,6 +45,28 @@ export default DropdownSelectBoxComponent.extend({
       }
     }
 
+    if (this.currentUser.staff) {
+      if (this.member.primary) {
+        items.push({
+          id: "removePrimary",
+          name: I18n.t("groups.members.remove_primary"),
+          description: I18n.t("groups.members.remove_primary_description", {
+            username: this.get("member.username"),
+          }),
+          icon: "id-card",
+        });
+      } else {
+        items.push({
+          id: "makePrimary",
+          name: I18n.t("groups.members.make_primary"),
+          description: I18n.t("groups.members.make_primary_description", {
+            username: this.get("member.username"),
+          }),
+          icon: "id-card",
+        });
+      }
+    }
+
     return items;
   }),
 });

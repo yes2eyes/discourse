@@ -91,6 +91,14 @@ export default Controller.extend({
       case "removeOwner":
         this.removeOwner(member);
         break;
+      case "makePrimary":
+        member
+          .setPrimaryGroup(this.model.id)
+          .then(() => member.set("primary", true));
+        break;
+      case "removePrimary":
+        member.setPrimaryGroup(null).then(() => member.set("primary", false));
+        break;
     }
   },
 

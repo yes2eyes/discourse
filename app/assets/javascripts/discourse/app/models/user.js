@@ -958,6 +958,13 @@ const User = RestModel.extend({
       return muted_ids.filter((existing_id) => existing_id !== id);
     }
   },
+
+  setPrimaryGroup(primaryGroupId) {
+    return ajax(`/admin/users/${this.id}/primary_group`, {
+      type: "PUT",
+      data: { primary_group_id: primaryGroupId },
+    });
+  },
 });
 
 User.reopenClass(Singleton, {
