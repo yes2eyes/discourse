@@ -207,7 +207,6 @@ export function acceptance(name, optionsOrCallback) {
 
       clearOutletCache();
       clearHTMLCache();
-      resetPluginApi();
 
       if (siteChanges) {
         resetSite(currentSettings(), siteChanges);
@@ -244,7 +243,6 @@ export function acceptance(name, optionsOrCallback) {
       resetExtraClasses();
       clearOutletCache();
       clearHTMLCache();
-      resetPluginApi();
       clearRewrites();
       initSearchData();
       resetDecorators();
