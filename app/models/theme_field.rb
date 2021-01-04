@@ -343,11 +343,49 @@ class ThemeField < ActiveRecord::Base
   end
 
   def compile_scss
-    Stylesheet::Compiler.compile("@import \"common/foundation/variables\"; @import \"common/foundation/mixins\"; @import \"theme_variables\"; @import \"theme_field\";",
+    with_extra_scss = import_extra_scss(self.value)
+
+    styles = <<~SCSS
+      @import "common/foundation/variables";
+      @import "common/foundation/mixins";
+      @import "theme_variables";
+
+      #{with_extra_scss}
+    SCSS
+
+    Stylesheet::Compiler.compile(styles,
       "theme.scss",
-      theme_field: self.value.dup,
       theme: self.theme
     )
+  end
+
+  def import_extra_scss(styles)
+    styles += ""
+
+    available_imports.keys.each do |path|
+      _, filename = File.split(path)
+
+      # matches:
+      # @import 'filename'
+      # @import "foldername/filename"
+      # @import "./filename"
+      # @import '../filename'
+      matches = /@import ['|"].?.?\/?(#{path}|#{filename})['|"];?/.match(styles)
+      if matches
+        styles_to_import = import_extra_scss(available_imports[path])
+        styles.gsub!(matches[0], styles_to_import)
+      end
+    end
+
+    styles
+  end
+
+  def available_imports
+    hash = {}
+    self.theme.theme_fields.where(target_id: Theme.targets[:extra_scss]).each do |field|
+      hash[field.name] = field.value
+    end
+    hash
   end
 
   def ensure_scss_compiles!

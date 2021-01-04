@@ -754,4 +754,72 @@ HTML
       expect(Theme.lookup_field(theme.id, :common, :after_header)).to include("_ws=someotherhostname.com")
     end
   end
+
+  describe "extra_scss" do
+    let(:scss) { "body { background: red}" }
+    let(:second_file_scss) { "p { color: blue};" }
+    let(:child_scss) { "body { background: green}" }
+
+    let(:theme) { Fabricate(:theme).tap { |t|
+      t.set_field(target: :extra_scss, name: "my_files/magic", value: scss)
+      t.set_field(target: :extra_scss, name: "my_files/magic2", value: second_file_scss)
+      t.save!
+    }}
+
+    let(:child_theme) { Fabricate(:theme).tap { |t|
+      t.component = true
+      t.set_field(target: :extra_scss, name: "my_files/moremagic", value: child_scss)
+      t.save!
+      theme.add_relative_theme!(:child, t)
+    }}
+
+    let(:compiler) { Stylesheet::Compiler.compile('@import "theme_variables"; @import "desktop_theme"; ', "theme.scss", theme_id: theme.id) }
+
+    it "works when importing file by path" do
+      theme.set_field(target: :common, name: :scss, value: '@import "my_files/magic";')
+      theme.save!
+
+      scss, _map = compiler
+      expect(scss).to include("body{background:red}")
+    end
+
+    it "works when importing multiple files" do
+      theme.set_field(target: :common, name: :scss, value: '@import "magic";\n@import "magic2"')
+      theme.save!
+
+      scss, _map = compiler
+      expect(scss).to include("body{background:red}")
+      expect(scss).to include("p{color:blue}")
+    end
+
+    it "works when using ./ or ../" do
+      theme.set_field(target: :common, name: :scss, value: '@import "./magic";\n@import "../magic2"')
+      theme.save!
+
+      scss, _map = compiler
+      expect(scss).to include("body{background:red}")
+      expect(scss).to include("p{color:blue}")
+    end
+
+    it "works for child themes" do
+      child_theme.set_field(target: :common, name: :scss, value: '@import "my_files/moremagic"')
+      child_theme.save!
+
+      scss, _map = Stylesheet::Compiler.compile('@import "desktop_theme"; ', "theme.scss", theme_id: child_theme.id)
+      expect(scss).to include("body{background:green}")
+    end
+
+    it "includes imports from main and child theme in output" do
+      theme.set_field(target: :common, name: :scss, value: '@import "./magic";\n@import "../magic2"')
+      theme.save!
+      child_theme.set_field(target: :common, name: :scss, value: '@import "moremagic"')
+      child_theme.save!
+
+      scss, _map = compiler
+
+      expect(scss).to include("body{background:red}")
+      expect(scss).to include("p{color:blue}")
+      expect(scss).to include("body{background:green}")
+    end
+  end
 end

@@ -159,11 +159,12 @@ HTML
 
   it "allows importing scss files" do
     theme = Fabricate(:theme)
-    main_field = theme.set_field(target: :common, name: :scss, value: ".class1{color: red}\n@import 'rootfile1';")
+    main_field = theme.set_field(target: :common, name: :scss, value: ".class1{color: red}\n@import 'rootfile1';\n@import 'rootfile3';")
     theme.set_field(target: :extra_scss, name: "rootfile1", value: ".class2{color:green}\n@import 'foldername/subfile1';")
     theme.set_field(target: :extra_scss, name: "rootfile2", value: ".class3{color:green} ")
     theme.set_field(target: :extra_scss, name: "foldername/subfile1", value: ".class4{color:yellow}\n@import 'subfile2';")
     theme.set_field(target: :extra_scss, name: "foldername/subfile2", value: ".class5{color:yellow}\n@import '../rootfile2';")
+    theme.set_field(target: :extra_scss, name: "rootfile3", value: ".class6{color:green} ")
 
     theme.save!
     result = main_field.compile_scss[0]
@@ -173,6 +174,16 @@ HTML
     expect(result).to include(".class3")
     expect(result).to include(".class4")
     expect(result).to include(".class5")
+    expect(result).to include(".class6")
+  end
+
+  it "raises error on missing SCSS import" do
+    theme = Fabricate(:theme)
+    field = theme.set_field(target: :common, name: :scss, value: "@import 'missingfile';")
+    theme.save!
+    field.ensure_scss_compiles!
+
+    expect(field.error).to include("File to import not found or unreadable: missingfile.scss.")
   end
 
   it "correctly handles extra JS fields" do
