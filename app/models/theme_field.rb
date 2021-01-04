@@ -365,11 +365,10 @@ class ThemeField < ActiveRecord::Base
     available_imports.keys.each do |path|
       _, filename = File.split(path)
 
-      # matches:
-      # @import 'filename'
-      # @import "foldername/filename"
-      # @import "./filename"
-      # @import '../filename'
+      # matches imports
+      #   with ' or "
+      #   using filename or foldername/filename
+      #   ignoring ./ and ../
       matches = /@import ['|"].?.?\/?(#{path}|#{filename})['|"];?/.match(styles)
       if matches
         styles_to_import = import_extra_scss(available_imports[path])

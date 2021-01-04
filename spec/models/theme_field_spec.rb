@@ -178,10 +178,7 @@ HTML
   end
 
   it "raises error on missing SCSS import" do
-    theme = Fabricate(:theme)
-    field = theme.set_field(target: :common, name: :scss, value: "@import 'missingfile';")
-    theme.save!
-    field.ensure_scss_compiles!
+    field = Fabricate(:theme).set_field(target: :common, name: :scss, value: "@import 'missingfile';")
 
     expect(field.error).to include("File to import not found or unreadable: missingfile.scss.")
   end

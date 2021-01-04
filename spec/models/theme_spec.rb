@@ -809,7 +809,7 @@ HTML
       expect(scss).to include("body{background:green}")
     end
 
-    it "includes imports from main and child theme in output" do
+    it "includes SCSS imports from both main theme and child theme" do
       theme.set_field(target: :common, name: :scss, value: '@import "./magic";\n@import "../magic2"')
       theme.save!
       child_theme.set_field(target: :common, name: :scss, value: '@import "moremagic"')
